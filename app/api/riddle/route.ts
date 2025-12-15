@@ -32,10 +32,17 @@ function jsonError(message: string, status = 400) {
 export async function POST(req: Request) {
   const apiKey = process.env.OPENAI_API_KEY;
   if (!apiKey) {
-    return jsonError("Missing OPENAI_API_KEY", 500);
+    return NextResponse.json(
+      { ok: false, error: "Server misconfigured (missing API key)" },
+      { status: 500 }
+    );
   }
 
   const client = new OpenAI({ apiKey });
+
+  // … minden más itt
+}
+
 
   let body: any;
   try {
