@@ -86,27 +86,34 @@ Rules:
       max_tokens: 300
     });
 
-    const text = response.choices[0]?.message?.content?.trim() || "";
+    const raw = response.output_text || "";
 
-    let parsed: any;
-    try {
-      parsed = JSON.parse(text);
-    } catch {
-      parsed = {
-        riddle: text || "Could not generate a riddle.",
-        solution: includeSolution ? "Try a clearer image." : "",
-        focus: "unknown",
-        difficulty: mode,
-        answer: ""
-      };
+  // Try to extract JSON object from text
+  const match = raw.match(/\{[\s\S]*\}/);
+
+  let parsed;
+  if (match) {
+  try {
+    parsed = JSON.parse(match[0]);
+  } catch {
+    parsed = null;
     }
+  }
 
-    if (!includeSolution) {
-      delete parsed.solution;
-      delete parsed.answer;
-    }
+  if (!parsed || !parsed.riddle) {
+  return NextResponse.json({
+    ok: false,
+    error: "Model did not return valid riddle JSON."
+  }, { status: 500 });
+  }
 
-    return NextResponse.json({ ok: true, ...parsed });
+  if (!includeSolution) {
+    delete parsed.solution;
+    delete parsed.answer;
+  }
+
+return NextResponse.json({ ok: true, ...parsed });
+
   } catch (err: any) {
     return NextResponse.json(
       { ok: false, error: err?.message || "Unknown error" },
