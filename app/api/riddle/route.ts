@@ -23,12 +23,12 @@ export async function POST(req: Request) {
     return jsonError("Invalid JSON body.");
   }
 
-  const {
-    imageDataUrl,         // "data:image/jpeg;base64,..."
-    mode = "medium" as Mode,
-    detail = "auto" as Detail,
-    includeSolution = true
-  } = body ?? {};
+  const imageDataUrl = body?.imageDataUrl;
+  const mode: Mode = asMode(body?.mode);
+  const detail: Detail =
+    body?.detail === "low" || body?.detail === "high" ? body.detail : "auto";
+  const includeSolution = body?.includeSolution !== false;
+
 
   if (typeof imageDataUrl !== "string" || !imageDataUrl.startsWith("data:image/")) {
     return jsonError("imageDataUrl must be a data:image/*;base64,... string");
