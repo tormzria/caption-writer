@@ -37,10 +37,10 @@ Rules:
 - Make the connection recognizable, not tricky.
 `,
           },
-            {
-              type: "input_image",
-              image_url: `data:image/jpeg;base64,${base64}`,
-            },
+          {
+            type: "input_image",
+            image: base64,
+          },
         ],
       },
     ],
@@ -48,7 +48,7 @@ Rules:
 
   const riddle =
     response.output_text ||
-    response.output?.[0]?.content?.[0]?.text ||
+    response.output?.?.content?.?.text ||
     "Unable to describe this image.";
 
   return NextResponse.json({ riddle });
