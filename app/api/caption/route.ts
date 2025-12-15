@@ -39,11 +39,8 @@ Rules:
           },
             {
               type: "input_image",
-              source: {
-                type: "base64",
-                media_type: "image/jpeg", // or "image/png"
-                data: base64,
-              }
+              image_url: `data:image/jpeg;base64,${base64}`,
+            },
             }
         ],
       },
