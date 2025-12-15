@@ -3,10 +3,6 @@ import { NextResponse } from "next/server";
 
 export const runtime = "nodejs";
 
-/* =======================
-   Types
-======================= */
-
 type Mode = "easy" | "medium" | "hard";
 type Detail = "low" | "auto" | "high";
 
@@ -17,32 +13,18 @@ function asMode(value: any): Mode {
   return "medium";
 }
 
-/* =======================
-   Helpers
-======================= */
-
 function jsonError(message: string, status = 400) {
   return NextResponse.json({ ok: false, error: message }, { status });
 }
 
-/* =======================
-   POST handler
-======================= */
-
 export async function POST(req: Request) {
+  // ✅ ENV csak runtime-ban
   const apiKey = process.env.OPENAI_API_KEY;
   if (!apiKey) {
-    return NextResponse.json(
-      { ok: false, error: "Server misconfigured (missing API key)" },
-      { status: 500 }
-    );
+    return jsonError("Missing OPENAI_API_KEY", 500);
   }
 
   const client = new OpenAI({ apiKey });
-
-  // … minden más itt
-}
-
 
   let body: any;
   try {
@@ -66,44 +48,31 @@ export async function POST(req: Request) {
     );
   }
 
-  /* =======================
-     Difficulty guidance
-  ======================= */
-
   const difficultyGuide: Record<Mode, string> = {
     easy:
-      "Make it easy: 2 short clues, no metaphors, clearly refer to the main subject.",
+      "Make it easy: 2 short clues, no metaphors, refer to the main subject clearly.",
     medium:
       "Make it medium: 2–3 clues, one mild metaphor allowed, still fair.",
     hard:
-      "Make it hard: 3 clues, indirect wording, but solvable without obscure knowledge."
+      "Make it hard: 3 clues, indirect but solvable without obscure knowledge."
   };
 
-  /* =======================
-     Prompt
-  ======================= */
-
   const prompt = `
-You are a visual riddle game generator.
+You are a riddle game generator.
 
-Return STRICT JSON with these keys:
-- "riddle": string (max 3 short lines)
-- "solution": string (1 sentence explanation)
-- "focus": string (what part of the image is targeted)
-- "difficulty": "easy" | "medium" | "hard"
-- "answer": string (1–5 words, the expected guess)
+Return STRICT JSON with:
+- riddle (string, max 3 lines)
+- solution (string)
+- focus (string)
+- difficulty ("easy" | "medium" | "hard")
+- answer (1–5 words)
 
 Rules:
-- English only.
-- Do NOT mention "image", "photo", "picture", or "uploaded".
-- Do NOT reveal the answer inside the riddle.
-- Avoid ultra-abstract poetry; make it playable.
+- English only
+- Do not mention images/photos
+- Do not reveal the answer in the riddle
 - ${difficultyGuide[mode]}
 `.trim();
-
-  /* =======================
-     OpenAI call
-  ======================= */
 
   try {
     const response = await client.responses.create({
@@ -125,35 +94,19 @@ Rules:
       max_output_tokens: 300
     });
 
-    /* =======================
-       Robust JSON extraction
-    ======================= */
-
-    const raw = response.output_text?.trim() || "";
+    const text = response.output_text?.trim() ?? "";
 
     let parsed: any;
-
     try {
-      // Attempt direct JSON parse
-      parsed = JSON.parse(raw);
+      parsed = JSON.parse(text);
     } catch {
-      try {
-        // Attempt to extract JSON from text
-        const match = raw.match(/\{[\s\S]*\}/);
-        if (!match) throw new Error("No JSON found");
-        parsed = JSON.parse(match[0]);
-      } catch {
-        // Final fallback
-        parsed = {
-          riddle: raw || "I couldn’t generate a riddle for this one.",
-          solution: includeSolution
-            ? "Try a clearer image with a distinct subject."
-            : "",
-          focus: "unknown",
-          difficulty: mode,
-          answer: ""
-        };
-      }
+      parsed = {
+        riddle: text || "I couldn't generate a riddle.",
+        solution: "No explanation available.",
+        focus: "unknown",
+        difficulty: mode,
+        answer: ""
+      };
     }
 
     if (!includeSolution) {
@@ -166,9 +119,8 @@ Rules:
       ...parsed
     });
   } catch (err: any) {
-    const msg = err?.message || "Unknown error";
     return NextResponse.json(
-      { ok: false, error: msg },
+      { ok: false, error: err?.message || "Unknown error" },
       { status: 500 }
     );
   }
