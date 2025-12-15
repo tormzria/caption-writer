@@ -37,10 +37,11 @@ Rules:
 - Make the connection recognizable, not tricky.
 `,
           },
-          {
-            type: "input_image",
-            image: base64,
-          },
+            {
+              type: "input_image",
+              image_url: `data:image/jpeg;base64,${base64}`,
+            },
+
         ],
       },
     ],
