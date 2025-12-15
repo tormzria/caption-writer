@@ -41,7 +41,6 @@ Rules:
               type: "input_image",
               image_url: `data:image/jpeg;base64,${base64}`,
             },
-            }
         ],
       },
     ],
