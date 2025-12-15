@@ -1,28 +1,18 @@
-import type { Metadata } from "next";
+import "./globals.css";
 
-export const metadata: Metadata = {
-  title: "Image Riddle",
-  description: "A small riddle about what you see.",
+export const metadata = {
+  title: "Caption Writer",
+  description: "Upload an image → get a riddle + solution."
 };
 
 export default function RootLayout({
-  children,
+  children
 }: {
   children: React.ReactNode;
 }) {
   return (
     <html lang="en">
-      <body
-        style={{
-          margin: 0,
-          fontFamily:
-            "-apple-system, BlinkMacSystemFont, Segoe UI, Roboto, Helvetica, Arial, sans-serif",
-          background: "#fff",
-          color: "#000",
-        }}
-      >
-        {children}
-      </body>
+      <body>{children}</body>
     </html>
   );
 }
