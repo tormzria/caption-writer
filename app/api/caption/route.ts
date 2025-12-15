@@ -47,9 +47,9 @@ Rules:
   });
 
   const riddle =
-    response.output_text ||
-    response.output?.?.content?.?.text ||
-    "Unable to describe this image.";
+  response.output_text ||
+  "Unable to describe this image.";
+
 
   return NextResponse.json({ riddle });
 }
