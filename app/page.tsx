@@ -43,10 +43,13 @@ export default function Page() {
     setPreview(url);
   }
 
-  async function fileToDataUrl(f: File): Promise<string> {
-    const buf = await f.arrayBuffer();
-    const b64 = btoa(String.fromCharCode(...new Uint8Array(buf)));
-    return `data:${f.type || "image/jpeg"};base64,${b64}`;
+  function fileToDataUrl(file: File): Promise<string> {
+  return new Promise((resolve, reject) => {
+    const reader = new FileReader();
+    reader.onload = () => resolve(reader.result as string);
+    reader.onerror = reject;
+    reader.readAsDataURL(file);
+  });
   }
 
   async function createRiddle() {
